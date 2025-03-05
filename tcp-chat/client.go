@@ -8,17 +8,10 @@ import (
 )
 
 type client struct {
-	conn net.Conn
-	name string
-	room *room
-}
-
-func newClient(c net.Conn) *client {
-	return &client{
-		conn: c,
-		name: "anon",
-		room: nil,
-	}
+	conn     net.Conn
+	name     string
+	room     *room
+	commands chan<- command
 }
 
 func (c *client) readInput() {
@@ -33,16 +26,33 @@ func (c *client) readInput() {
 
 		args := strings.Split(msg, " ")
 
-		cmd := args[0]
-		fmt.Println(cmd)
+		cmd := strings.TrimSuffix(args[0], "\n")
 
+		// pass command to chan
 		switch cmd {
 		case "/join":
-			// c.room = room?
+			c.commands <- command{
+				id:     CMD_JOIN,
+				client: c,
+				args:   args,
+			}
 		case "/msg":
-			// msg will now send to room?
+			fmt.Println("here?")
+			c.commands <- command{
+				id:     CMD_MSG,
+				client: c,
+				args:   args,
+			}
 		}
 
 		// c.conn.Write([]byte("Message received.\n"))
 	}
+}
+
+func (c *client) err(err error) {
+	c.conn.Write([]byte("err: " + err.Error() + "\n"))
+}
+
+func (c *client) msg(m string) {
+	c.conn.Write([]byte(">" + m + "\n"))
 }

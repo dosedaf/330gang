@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	// s := newServer()
+	s := newServer()
+	go s.run()
 
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -22,7 +23,7 @@ func main() {
 			return
 		}
 
-		c := newClient(conn)
+		c := s.newClient(conn)
 
 		go c.readInput()
 	}
