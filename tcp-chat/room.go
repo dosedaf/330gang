@@ -1,6 +1,9 @@
 package main
 
-import "net"
+import (
+	"fmt"
+	"net"
+)
 
 type room struct {
 	name    string
@@ -8,9 +11,10 @@ type room struct {
 }
 
 func (r *room) broadcast(sender *client, msg string) {
+	fmt.Println("tes")
 	for addr, m := range r.members {
-		if addr != sender.conn.RemoteAddr() {
-			m.msg(msg)
+		if sender.conn.RemoteAddr() != addr {
+			m.msg(sender.username + "> " + msg)
 		}
 	}
 }

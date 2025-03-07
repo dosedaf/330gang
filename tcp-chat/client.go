@@ -2,14 +2,13 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 	"strings"
 )
 
 type client struct {
 	conn     net.Conn
-	name     string
+	username string
 	room     *room
 	commands chan<- command
 }
@@ -24,12 +23,19 @@ func (c *client) readInput() {
 			return
 		}
 
-		args := strings.Split(msg, " ")
+		msg = strings.Trim(msg, "\r\n")
 
-		cmd := strings.TrimSuffix(args[0], "\n")
+		args := strings.Split(msg, " ")
+		cmd := strings.TrimSpace(args[0])
 
 		// pass command to chan
 		switch cmd {
+		case "/username":
+			c.commands <- command{
+				id:     CMD_USERNAME,
+				client: c,
+				args:   args,
+			}
 		case "/join":
 			c.commands <- command{
 				id:     CMD_JOIN,
@@ -37,15 +43,24 @@ func (c *client) readInput() {
 				args:   args,
 			}
 		case "/msg":
-			fmt.Println("here?")
 			c.commands <- command{
 				id:     CMD_MSG,
 				client: c,
 				args:   args,
 			}
+		case "/rooms":
+			c.commands <- command{
+				id:     CMD_ROOMS,
+				client: c,
+			}
+		case "/quit":
+			c.commands <- command{
+				id:     CMD_QUIT,
+				client: c,
+			}
+		default:
+			c.msg("invalid input! please use the available commands!")
 		}
-
-		// c.conn.Write([]byte("Message received.\n"))
 	}
 }
 
@@ -54,5 +69,5 @@ func (c *client) err(err error) {
 }
 
 func (c *client) msg(m string) {
-	c.conn.Write([]byte(">" + m + "\n"))
+	c.conn.Write([]byte(m + "\n"))
 }

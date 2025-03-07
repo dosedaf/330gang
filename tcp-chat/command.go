@@ -2,9 +2,13 @@ package main
 
 type commandID int
 
+// increment ggwp
 const (
-	CMD_JOIN commandID = iota
+	CMD_USERNAME commandID = iota
+	CMD_JOIN
 	CMD_MSG
+	CMD_ROOMS
+	CMD_QUIT
 )
 
 type command struct {
